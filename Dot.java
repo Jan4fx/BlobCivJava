@@ -14,8 +14,6 @@ public class Dot {
     private static final int BASE_SPEED = 10;
     private static final double SPEED_DIVISOR = 25.0;
 
-
-
     public Dot(Point position, int size, Color color) {
         this.position = position;
         this.size = size;
@@ -30,7 +28,6 @@ public class Dot {
         return this.target;
     }
     
-
     public int getSize() {
         return size;
     }
@@ -69,8 +66,6 @@ public class Dot {
             }
         }
     }
-    
-    
 
     public void draw(Graphics2D g) {
         g.setColor(color);

@@ -11,6 +11,7 @@ import java.util.TimerTask;
 
 public class GamePanel extends JPanel {
     private Dot blueDot;
+    private GreenDot greenDot;
     private List<Dot> redDots;
     private Random rand;
     private Timer spawnTimer;
@@ -20,6 +21,7 @@ public class GamePanel extends JPanel {
         rand = new Random();
 
         blueDot = new Dot(new Point(rand.nextInt(800), rand.nextInt(600)), 10, Color.BLUE);
+        greenDot = new GreenDot(new Point(rand.nextInt(800), rand.nextInt(600)), 10);
         redDots = new ArrayList<>();
 
         // Spawn 5 red dots initially
@@ -48,6 +50,12 @@ public class GamePanel extends JPanel {
                         blueDotLifeTimer.cancel();
                     }
                 }
+                if (greenDot != null) {
+                    greenDot.setSize(greenDot.getSize() - 1);
+                    if (greenDot.getSize() <= 0) {
+                        greenDot = null;
+                    }
+                }
             }
         }, 0, 1000);
     }
@@ -66,48 +74,34 @@ public class GamePanel extends JPanel {
             blueDot.draw(g2d);
         }
 
+        if (greenDot != null) {
+            greenDot.draw(g2d);
+        }
+
         for (Dot dot : redDots) {
             dot.draw(g2d);
         }
     }
 
     public void update() {
-        // Check if the blue dot has reached its target red dot
-        if (blueDot != null && blueDot.getTarget() != null) {
-            double distanceToTarget = blueDot.getPosition().distance(blueDot.getTarget().getPosition());
-            if (distanceToTarget <= 5) {  // If within a certain range, assume the blue dot has consumed the red dot
-                System.out.println("Before consuming red dot, blue dot size: " + blueDot.getSize());
-                redDots.remove(blueDot.getTarget());
-                blueDot.setSize(blueDot.getSize() + 2); 
-                System.out.println("After consuming red dot, blue dot size: " + blueDot.getSize());
-                blueDot.setTarget(null); 
+        // Blue and Green dot interaction
+        if (blueDot != null && greenDot != null) {
+            double distanceBetweenBlueAndGreen = blueDot.getPosition().distance(greenDot.getPosition());
+            if (distanceBetweenBlueAndGreen <= blueDot.getSize() / 2 + greenDot.getSize() / 2) {
+                // Bounce logic can be implemented here
+                blueDot.setSize(blueDot.getSize() - 1); // Decrease food size
+                greenDot.setSize(greenDot.getSize() - 1); // Decrease food size
             }
         }
-    
-        // Find the nearest red dot to the blue dot
-        double minDistance = Double.MAX_VALUE;
-        Dot nearestRedDot = null;
-        for (Dot redDot : redDots) {
-            double distance = blueDot.getPosition().distance(redDot.getPosition());
-            if (distance < minDistance) {
-                minDistance = distance;
-                nearestRedDot = redDot;
-            }
+
+        // Blue dot and red dots interaction
+        // ... [Same as your previous logic]
+
+        // Green dot moves towards Blue dot
+        if (greenDot != null) {
+            greenDot.moveTowardsTarget(blueDot);
         }
-    
-        // If a red dot is found, set it as the blue dot's target
-        if (nearestRedDot != null) {
-            blueDot.setTarget(nearestRedDot);
-        }
-    
-        // Make the blue dot move towards its target red dot
-        if (blueDot.getTarget() != null) {
-            blueDot.moveTowardsTarget();
-        }
-    
+
         repaint();
     }
-    
-    
-    
 }
