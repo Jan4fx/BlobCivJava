@@ -10,7 +10,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class GamePanel extends JPanel {
-    private Dot blueDot;
+    private BlueDot blueDot;
     private GreenDot greenDot;
     private List<Dot> redDots;
     private Random rand;
@@ -20,7 +20,7 @@ public class GamePanel extends JPanel {
     public GamePanel() {
         rand = new Random();
 
-        blueDot = new Dot(new Point(rand.nextInt(800), rand.nextInt(600)), 10, Color.BLUE);
+        blueDot = new BlueDot(new Point(rand.nextInt(800), rand.nextInt(600)), 10);
         greenDot = new GreenDot(new Point(rand.nextInt(800), rand.nextInt(600)), 10);
         redDots = new ArrayList<>();
 
