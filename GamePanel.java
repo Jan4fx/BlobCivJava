@@ -15,7 +15,7 @@ public class GamePanel extends JPanel {
     private List<Dot> redDots;
     private Random rand;
     private Timer spawnTimer;
-    private Timer blueDotLifeTimer;
+    private Timer dotLifeTimer;
 
     public GamePanel() {
         rand = new Random();
@@ -36,23 +36,23 @@ public class GamePanel extends JPanel {
             public void run() {
                 spawnRedDot();
             }
-        }, (rand.nextInt(3) + 1) * 1000, (rand.nextInt(3) + 1) * 1000);
+        }, (rand.nextInt(1) + 1) * 1000, (rand.nextInt(3) + 1) * 1000);
 
-        // Set up a timer to decrease blue dot's food points every second
-        blueDotLifeTimer = new Timer(true);
-        blueDotLifeTimer.scheduleAtFixedRate(new TimerTask() {
+        // Set up a timer to decrease dot's food points every second
+        dotLifeTimer = new Timer(true);
+        dotLifeTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 if (blueDot != null) {
                     blueDot.setSize(blueDot.getSize() - 1);
-                    if (blueDot.getSize() <= 0) {
+                    if (blueDot.getSize() <= 3) {
                         blueDot = null;
-                        blueDotLifeTimer.cancel();
+                        //dotLifeTimer.cancel();
                     }
                 }
                 if (greenDot != null) {
                     greenDot.setSize(greenDot.getSize() - 1);
-                    if (greenDot.getSize() <= 0) {
+                    if (greenDot.getSize() <= 3) {
                         greenDot = null;
                     }
                 }
@@ -90,7 +90,7 @@ public class GamePanel extends JPanel {
             double distance = consumerDot.getPosition().distance(redDot.getPosition());
             if (distance <= consumerDot.getSize() / 2 + redDot.getSize() / 2) {
                 redDotToConsume = redDot;
-                consumerDot.setSize(consumerDot.getSize() + 15);  // Increase size by 15 food points
+                consumerDot.setSize(consumerDot.getSize() + 8);  // Increase size when eating red dot
                 break;
             }
         }
@@ -106,9 +106,41 @@ public class GamePanel extends JPanel {
         if (blueDot != null && greenDot != null) {
             double distanceBetweenBlueAndGreen = blueDot.getPosition().distance(greenDot.getPosition());
             if (distanceBetweenBlueAndGreen <= blueDot.getSize() / 2 + greenDot.getSize() / 2) {
-                // Bounce logic can be implemented here
-                blueDot.setSize(blueDot.getSize() - 1); // Decrease food size
-                greenDot.setSize(greenDot.getSize() - 1); // Decrease food size
+                // Calculate 10% of each dot's size
+                int blueDeduction = (int) (0.10 * greenDot.getSize());
+                int greenDeduction = (int) (0.10 * blueDot.getSize());
+
+                // Deduct from each dot's size
+                blueDot.setSize(blueDot.getSize() - blueDeduction);
+                greenDot.setSize(greenDot.getSize() - greenDeduction);
+
+                // Determine which dot is smaller
+                Dot smallerDot, largerDot;
+                int smallerBounce, largerBounce;
+                if (blueDot.getSize() < greenDot.getSize()) {
+                    smallerDot = blueDot;
+                    largerDot = greenDot;
+                    smallerBounce = 25;
+                    largerBounce = 15;
+                } else {
+                    smallerDot = greenDot;
+                    largerDot = blueDot;
+                    smallerBounce = 25;
+                    largerBounce = 15;
+                }
+
+                // Determine the direction of the bounce
+                double dx = smallerDot.getPosition().x - largerDot.getPosition().x;
+                double dy = smallerDot.getPosition().y - largerDot.getPosition().y;
+                double magnitude = Math.sqrt(dx * dx + dy * dy);
+
+                // Normalize the direction vector
+                dx /= magnitude;
+                dy /= magnitude;
+
+                // Apply the bounce effect
+                smallerDot.getPosition().translate((int) (smallerBounce * dx), (int) (smallerBounce * dy));
+                largerDot.getPosition().translate((int) (-largerBounce * dx), (int) (-largerBounce * dy));
             }
         }
 
