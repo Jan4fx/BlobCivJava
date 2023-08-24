@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.awt.Point;
+import java.util.List;
 import java.awt.Graphics2D;
 
 public class GreenDot extends Dot {
@@ -22,31 +23,40 @@ public class GreenDot extends Dot {
         return false;
     }
 
-    public void moveTowardsTarget(Dot target) {
-        if (target != null) {
-            double dx = target.getPosition().x - position.x;
-            double dy = target.getPosition().y - position.y;
+    public void moveTowardsTarget(List<Dot> redDots, Dot blueDot) {
+        if (redDots != null && !redDots.isEmpty()) {
+            Dot closestRedDot = redDots.get(0);
+            double minDistance = position.distance(closestRedDot.getPosition());
+            
+            // Find the closest red dot
+            for (Dot redDot : redDots) {
+                double currentDistance = position.distance(redDot.getPosition());
+                if (currentDistance < minDistance) {
+                    minDistance = currentDistance;
+                    closestRedDot = redDot;
+                }
+            }
+
+            double dx = closestRedDot.getPosition().x - position.x;
+            double dy = closestRedDot.getPosition().y - position.y;
             double distance = Math.sqrt(dx * dx + dy * dy);
-    
+
             // Adjust speed based on proximity to blue dot
-            if (isInProximityToBlueDot(target)) {
+            if (isInProximityToBlueDot(blueDot)) {
                 speed = BASE_SPEED * BOOSTED_SPEED_MULTIPLIER;
                 this.size -= (int) (this.size * BOOSTED_FOOD_LOSS_RATE / 100.0);
             } else {
                 speed = BASE_SPEED;
             }
-            
-            // Determine speed based on the size of the dot
+
             double adjustedSpeed = speed / (1 + (size / SPEED_DIVISOR));
             
             if (distance > 0) {
-                int moveX = (int) (dx / distance * adjustedSpeed);  // Moving pixels towards target
+                int moveX = (int) (dx / distance * adjustedSpeed);
                 int moveY = (int) (dy / distance * adjustedSpeed);
-    
-                // Update position
+
                 position.translate(moveX, moveY);
-    
-                // Ensure the dot stays within screen boundaries
+
                 position.x = Math.min(Math.max(position.x, 0), SCREEN_WIDTH);
                 position.y = Math.min(Math.max(position.y, 0), SCREEN_HEIGHT);
             }

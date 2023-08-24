@@ -99,7 +99,10 @@ public class GamePanel extends JPanel {
 
         // Green dot moves towards Blue dot
         if (greenDot != null) {
-            greenDot.moveTowardsTarget(blueDot);
+            greenDot.moveTowardsTarget(redDots, blueDot);
+        }
+        if (blueDot != null) {
+            blueDot.moveTowardsTarget(redDots);
         }
 
         repaint();
