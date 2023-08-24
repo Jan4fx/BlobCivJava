@@ -83,6 +83,24 @@ public class GamePanel extends JPanel {
         }
     }
 
+    private void consumeRedDot(Dot consumerDot) {
+        Dot redDotToConsume = null;
+
+        for (Dot redDot : redDots) {
+            double distance = consumerDot.getPosition().distance(redDot.getPosition());
+            if (distance <= consumerDot.getSize() / 2 + redDot.getSize() / 2) {
+                redDotToConsume = redDot;
+                consumerDot.setSize(consumerDot.getSize() + 15);  // Increase size by 15 food points
+                break;
+            }
+        }
+
+        // Remove the consumed red dot
+        if (redDotToConsume != null) {
+            redDots.remove(redDotToConsume);
+        }
+    }
+
     public void update() {
         // Blue and Green dot interaction
         if (blueDot != null && greenDot != null) {
@@ -95,14 +113,15 @@ public class GamePanel extends JPanel {
         }
 
         // Blue dot and red dots interaction
-        // ... [Same as your previous logic]
-
-        // Green dot moves towards Blue dot
-        if (greenDot != null) {
-            greenDot.moveTowardsTarget(redDots, blueDot);
-        }
         if (blueDot != null) {
             blueDot.moveTowardsTarget(redDots);
+            consumeRedDot(blueDot);
+        }
+
+        // Green dot moves towards Red dots
+        if (greenDot != null) {
+            greenDot.moveTowardsTarget(redDots, blueDot);
+            consumeRedDot(greenDot);
         }
 
         repaint();
