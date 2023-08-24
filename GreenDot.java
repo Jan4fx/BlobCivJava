@@ -14,7 +14,7 @@ public class GreenDot extends Dot {
     private static final long PROXIMITY_DURATION = 3000;  // 3 seconds in milliseconds
 
     public GreenDot(Point position, int size) {
-        super(position, size, Color.GREEN);
+        super(position, 15, Color.GREEN);
         this.speed = BASE_SPEED;
     }
 
