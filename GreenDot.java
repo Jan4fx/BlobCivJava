@@ -2,39 +2,16 @@ import java.awt.Color;
 import java.awt.Point;
 import java.awt.Graphics2D;
 
-public class GreenDot {
-    private Point position;
-    private int size;
-    private Color color = Color.GREEN;  // Green by default
-    private double speed;
-    private static final int SCREEN_WIDTH = 800;
-    private static final int SCREEN_HEIGHT = 600;
+public class GreenDot extends Dot {
     private static final int BASE_SPEED = 10;
     private static final double SPEED_DIVISOR = 25.0;
-    private static final double PROXIMITY_THRESHOLD = 50.0;  // Distance to check proximity to the blue dot
+    private static final double PROXIMITY_THRESHOLD = 50.0;
     private static final double BOOSTED_SPEED_MULTIPLIER = 2.0;
     private static final double BOOSTED_FOOD_LOSS_RATE = 2.5;
 
     public GreenDot(Point position, int size) {
-        this.position = position;
-        this.size = size;
+        super(position, size, Color.GREEN);
         this.speed = BASE_SPEED;
-    }
-
-    public Point getPosition() {
-        return position;
-    }
-
-    public int getSize() {
-        return size;
-    }
-
-    public void setSize(int size) {
-        this.size = size;
-    }
-
-    public Color getColor() {
-        return color;
     }
 
     private boolean isInProximityToBlueDot(Dot blueDot) {
@@ -74,10 +51,5 @@ public class GreenDot {
                 position.y = Math.min(Math.max(position.y, 0), SCREEN_HEIGHT);
             }
         }
-    }
-
-    public void draw(Graphics2D g) {
-        g.setColor(color);
-        g.fillOval(position.x - size / 2, position.y - size / 2, size, size);
     }
 }
