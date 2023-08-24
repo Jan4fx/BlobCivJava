@@ -30,7 +30,8 @@ public class BlueDot extends Dot {
             double dy = closestRedDot.getPosition().y - position.y;
             double distance = Math.sqrt(dx * dx + dy * dy);
 
-            double adjustedSpeed = speed / (1 + (size / SPEED_DIVISOR));
+            double adjustedSpeed = Math.max(BASE_SPEED / 3, speed / (1 + (getSize() / SPEED_DIVISOR)));
+
             
             if (distance > 0) {
                 int moveX = (int) (dx / distance * adjustedSpeed);

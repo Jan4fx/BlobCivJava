@@ -37,5 +37,10 @@ public class Dot {
         g.fillOval(position.x - size / 2, position.y - size / 2, size, size);
     }
 
+    public void setPosition(Point newPosition) {
+        this.position = newPosition;
+    }
+    
+
     // Other common methods for Dot can be added here
 }

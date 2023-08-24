@@ -1,14 +1,17 @@
 import java.awt.Color;
 import java.awt.Point;
-import java.util.List;
 import java.awt.Graphics2D;
+import java.util.List;
 
 public class GreenDot extends Dot {
+    private double speed;
+    private static final int SCREEN_WIDTH = 800;
+    private static final int SCREEN_HEIGHT = 600;
     private static final int BASE_SPEED = 10;
     private static final double SPEED_DIVISOR = 25.0;
-    private static final double PROXIMITY_THRESHOLD = 50.0;
-    private static final double BOOSTED_SPEED_MULTIPLIER = 2.0;
     private static final double BOOSTED_FOOD_LOSS_RATE = 2.5;
+    private long proximityStartTime = 0;
+    private static final long PROXIMITY_DURATION = 3000;  // 3 seconds in milliseconds
 
     public GreenDot(Point position, int size) {
         super(position, size, Color.GREEN);
@@ -17,8 +20,8 @@ public class GreenDot extends Dot {
 
     private boolean isInProximityToBlueDot(Dot blueDot) {
         if (blueDot != null) {
-            double distance = this.position.distance(blueDot.getPosition());
-            return distance <= PROXIMITY_THRESHOLD;
+            double distance = this.getPosition().distance(blueDot.getPosition());
+            return distance <= 50;
         }
         return false;
     }
@@ -26,40 +29,63 @@ public class GreenDot extends Dot {
     public void moveTowardsTarget(List<Dot> redDots, Dot blueDot) {
         if (redDots != null && !redDots.isEmpty()) {
             Dot closestRedDot = redDots.get(0);
-            double minDistance = position.distance(closestRedDot.getPosition());
-            
+            double minDistance = getPosition().distance(closestRedDot.getPosition());
+        
             // Find the closest red dot
             for (Dot redDot : redDots) {
-                double currentDistance = position.distance(redDot.getPosition());
+                double currentDistance = getPosition().distance(redDot.getPosition());
                 if (currentDistance < minDistance) {
                     minDistance = currentDistance;
                     closestRedDot = redDot;
                 }
             }
 
-            double dx = closestRedDot.getPosition().x - position.x;
-            double dy = closestRedDot.getPosition().y - position.y;
+            double dx = closestRedDot.getPosition().x - getPosition().x;
+            double dy = closestRedDot.getPosition().y - getPosition().y;
             double distance = Math.sqrt(dx * dx + dy * dy);
 
-            // Adjust speed based on proximity to blue dot
             if (isInProximityToBlueDot(blueDot)) {
-                speed = BASE_SPEED * BOOSTED_SPEED_MULTIPLIER;
-                this.size -= (int) (this.size * BOOSTED_FOOD_LOSS_RATE / 100.0);
+                if (proximityStartTime == 0) {  // Start the timer
+                    proximityStartTime = System.currentTimeMillis();
+                }
+
+                long elapsedTime = System.currentTimeMillis() - proximityStartTime;
+
+                if (elapsedTime <= PROXIMITY_DURATION) {
+                    speed = BASE_SPEED * 3;
+                    setSize(getSize() - (int) (getSize() * (BOOSTED_FOOD_LOSS_RATE * 2) / 100.0));  // Double the food burn rate
+                } else {
+                    if (getPosition().distance(blueDot.getPosition()) > 50) {
+                        speed = BASE_SPEED;
+                        proximityStartTime = 0;  // Reset the timer
+                    }
+                }
             } else {
                 speed = BASE_SPEED;
+                proximityStartTime = 0;  // Reset the timer if out of proximity
             }
 
-            double adjustedSpeed = speed / (1 + (size / SPEED_DIVISOR));
-            
+            double adjustedSpeed = Math.max(BASE_SPEED / 3, speed / (1 + (getSize() / SPEED_DIVISOR)));
+
+        
             if (distance > 0) {
                 int moveX = (int) (dx / distance * adjustedSpeed);
                 int moveY = (int) (dy / distance * adjustedSpeed);
 
-                position.translate(moveX, moveY);
+                Point newPosition = new Point(getPosition().x + moveX, getPosition().y + moveY);
 
-                position.x = Math.min(Math.max(position.x, 0), SCREEN_WIDTH);
-                position.y = Math.min(Math.max(position.y, 0), SCREEN_HEIGHT);
+                // Ensure the dot stays within screen boundaries
+                newPosition.x = Math.min(Math.max(newPosition.x, 0), SCREEN_WIDTH);
+                newPosition.y = Math.min(Math.max(newPosition.y, 0), SCREEN_HEIGHT);
+
+                setPosition(newPosition);
             }
         }
+    }
+
+    @Override
+    public void draw(Graphics2D g) {
+        g.setColor(getColor());
+        g.fillOval(getPosition().x - getSize() / 2, getPosition().y - getSize() / 2, getSize(), getSize());
     }
 }
