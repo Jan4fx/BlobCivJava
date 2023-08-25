@@ -42,12 +42,12 @@ public class GreenDot extends Dot {
 
             double adjustedSpeed = BASE_SPEED / (1 + (getSize() / SPEED_DIVISOR));
 
-            if (isInProximityToBlueDot(blueDot)) {
-                adjustedSpeed *= 3;
-            }
-
             if (adjustedSpeed < 5) {
                 adjustedSpeed = 5;
+            }
+
+            if (isInProximityToBlueDot(blueDot)) {
+                adjustedSpeed *= 2;
             }
 
             if (distance > 0) {
