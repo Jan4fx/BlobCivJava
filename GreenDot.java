@@ -4,24 +4,20 @@ import java.awt.Graphics2D;
 import java.util.List;
 
 public class GreenDot extends Dot {
-    private double speed;
     private static final int SCREEN_WIDTH = 800;
     private static final int SCREEN_HEIGHT = 600;
-    private static final int BASE_SPEED = 10;
+    private static final int BASE_SPEED = 15;
     private static final double SPEED_DIVISOR = 25.0;
-    private static final double BOOSTED_FOOD_LOSS_RATE = 2.5;
-    private long proximityStartTime = 0;
     private static final long PROXIMITY_DURATION = 3000;  // 3 seconds in milliseconds
 
     public GreenDot(Point position, int size) {
         super(position, 15, Color.GREEN);
-        this.speed = BASE_SPEED;
     }
 
     private boolean isInProximityToBlueDot(Dot blueDot) {
         if (blueDot != null) {
             double distance = this.getPosition().distance(blueDot.getPosition());
-            return distance <= 50;
+            return distance <= 75;
         }
         return false;
     }
@@ -30,7 +26,7 @@ public class GreenDot extends Dot {
         if (redDots != null && !redDots.isEmpty()) {
             Dot closestRedDot = redDots.get(0);
             double minDistance = getPosition().distance(closestRedDot.getPosition());
-        
+
             // Find the closest red dot
             for (Dot redDot : redDots) {
                 double currentDistance = getPosition().distance(redDot.getPosition());
@@ -44,30 +40,16 @@ public class GreenDot extends Dot {
             double dy = closestRedDot.getPosition().y - getPosition().y;
             double distance = Math.sqrt(dx * dx + dy * dy);
 
+            double adjustedSpeed = BASE_SPEED / (1 + (getSize() / SPEED_DIVISOR));
+
             if (isInProximityToBlueDot(blueDot)) {
-                if (proximityStartTime == 0) {  // Start the timer
-                    proximityStartTime = System.currentTimeMillis();
-                }
-
-                long elapsedTime = System.currentTimeMillis() - proximityStartTime;
-
-                if (elapsedTime <= PROXIMITY_DURATION) {
-                    speed = BASE_SPEED * 3;
-                    setSize(getSize() - (int) (getSize() * (BOOSTED_FOOD_LOSS_RATE * 2) / 100.0));  // Double the food burn rate
-                } else {
-                    if (getPosition().distance(blueDot.getPosition()) > 50) {
-                        speed = BASE_SPEED;
-                        proximityStartTime = 0;  // Reset the timer
-                    }
-                }
-            } else {
-                speed = BASE_SPEED;
-                proximityStartTime = 0;  // Reset the timer if out of proximity
+                adjustedSpeed *= 3;
             }
 
-            double adjustedSpeed = Math.max(BASE_SPEED / 3, speed / (1 + (getSize() / SPEED_DIVISOR)));
+            if (adjustedSpeed < 5) {
+                adjustedSpeed = 5;
+            }
 
-        
             if (distance > 0) {
                 int moveX = (int) (dx / distance * adjustedSpeed);
                 int moveY = (int) (dy / distance * adjustedSpeed);
