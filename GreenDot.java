@@ -8,21 +8,22 @@ public class GreenDot extends Dot {
     private static final int SCREEN_HEIGHT = 600;
     private static final int BASE_SPEED = 15;
     private static final double SPEED_DIVISOR = 25.0;
-    private static final long PROXIMITY_DURATION = 3000;  // 3 seconds in milliseconds
 
     public GreenDot(Point position, int size) {
-        super(position, 15, Color.GREEN);
+        super(position, size, Color.GREEN);
     }
 
-    private boolean isInProximityToBlueDot(Dot blueDot) {
-        if (blueDot != null) {
-            double distance = this.getPosition().distance(blueDot.getPosition());
+    private boolean isInProximityToOtherDot(Dot otherDot) {
+        if (otherDot != null) {
+            double distance = this.getPosition().distance(otherDot.getPosition());
             return distance <= 75;
         }
         return false;
     }
 
-    public void moveTowardsTarget(List<Dot> redDots, Dot blueDot) {
+    public void moveTowardsTarget(List<Dot> redDots, Dot blueDot, Dot yellowDot) {
+        Point targetPosition;
+
         if (redDots != null && !redDots.isEmpty()) {
             Dot closestRedDot = redDots.get(0);
             double minDistance = getPosition().distance(closestRedDot.getPosition());
@@ -35,33 +36,37 @@ public class GreenDot extends Dot {
                     closestRedDot = redDot;
                 }
             }
+            targetPosition = closestRedDot.getPosition();
+        } else {
+            //if no food go to this point on the screen
+            targetPosition = new Point(300, SCREEN_HEIGHT / 300);
+        }
 
-            double dx = closestRedDot.getPosition().x - getPosition().x;
-            double dy = closestRedDot.getPosition().y - getPosition().y;
-            double distance = Math.sqrt(dx * dx + dy * dy);
+        double dx = targetPosition.x - getPosition().x;
+        double dy = targetPosition.y - getPosition().y;
+        double distance = Math.sqrt(dx * dx + dy * dy);
 
-            double adjustedSpeed = BASE_SPEED / (1 + (getSize() / SPEED_DIVISOR));
+        double adjustedSpeed = BASE_SPEED / (1 + (getSize() / SPEED_DIVISOR));
 
-            if (adjustedSpeed < 5) {
-                adjustedSpeed = 5;
-            }
+        if (adjustedSpeed < 5) {
+            adjustedSpeed = 5;
+        }
 
-            if (isInProximityToBlueDot(blueDot)) {
-                adjustedSpeed *= 2;
-            }
+        if (isInProximityToOtherDot(blueDot) || isInProximityToOtherDot(yellowDot)) {
+            adjustedSpeed *= 2;
+        }
 
-            if (distance > 0) {
-                int moveX = (int) (dx / distance * adjustedSpeed);
-                int moveY = (int) (dy / distance * adjustedSpeed);
+        if (distance > 0) {
+            int moveX = (int) (dx / distance * adjustedSpeed);
+            int moveY = (int) (dy / distance * adjustedSpeed);
 
-                Point newPosition = new Point(getPosition().x + moveX, getPosition().y + moveY);
+            Point newPosition = new Point(getPosition().x + moveX, getPosition().y + moveY);
 
-                // Ensure the dot stays within screen boundaries
-                newPosition.x = Math.min(Math.max(newPosition.x, 0), SCREEN_WIDTH);
-                newPosition.y = Math.min(Math.max(newPosition.y, 0), SCREEN_HEIGHT);
+            // Ensure the dot stays within screen boundaries
+            newPosition.x = Math.min(Math.max(newPosition.x, 0), SCREEN_WIDTH);
+            newPosition.y = Math.min(Math.max(newPosition.y, 0), SCREEN_HEIGHT);
 
-                setPosition(newPosition);
-            }
+            setPosition(newPosition);
         }
     }
 

@@ -12,6 +12,7 @@ import java.util.TimerTask;
 public class GamePanel extends JPanel {
     private BlueDot blueDot;
     private GreenDot greenDot;
+    private YellowDot yellowDot;
     private List<Dot> redDots;
     private Random rand;
     private Timer spawnTimer;
@@ -22,6 +23,7 @@ public class GamePanel extends JPanel {
 
         blueDot = new BlueDot(new Point(rand.nextInt(800), rand.nextInt(600)), 10);
         greenDot = new GreenDot(new Point(rand.nextInt(800), rand.nextInt(600)), 10);
+        //yellowDot = new YellowDot(new Point(rand.nextInt(800), rand.nextInt(600)), 10);
         redDots = new ArrayList<>();
 
         // Spawn 5 red dots initially
@@ -78,6 +80,10 @@ public class GamePanel extends JPanel {
             greenDot.draw(g2d);
         }
 
+        if (yellowDot != null) {
+            yellowDot.draw(g2d);
+        }
+
         for (Dot dot : redDots) {
             dot.draw(g2d);
         }
@@ -101,47 +107,62 @@ public class GamePanel extends JPanel {
         }
     }
 
+    // Handles interaction between any two dots
+    public void handleDotInteraction(Dot dot1, Dot dot2) {
+        double distance = dot1.getPosition().distance(dot2.getPosition());
+        if (distance <= dot1.getSize() / 2 + dot2.getSize() / 2) {
+            // Calculate 10% of each dot's size
+            int dot1Deduction = (int) (0.10 * dot2.getSize());
+            int dot2Deduction = (int) (0.10 * dot1.getSize());
+
+            // Deduct from each dot's size
+            dot1.setSize(dot1.getSize() - dot1Deduction);
+            dot2.setSize(dot2.getSize() - dot2Deduction);
+
+            // Determine which dot is smaller
+            Dot smallerDot, largerDot;
+            int smallerBounce, largerBounce;
+            if (dot1.getSize() < dot2.getSize()) {
+                smallerDot = dot1;
+                largerDot = dot2;
+                smallerBounce = 25;
+                largerBounce = 15;
+            } else {
+                smallerDot = dot2;
+                largerDot = dot1;
+                smallerBounce = 25;
+                largerBounce = 15;
+            }
+
+            // Determine the direction of the bounce
+            double dx = smallerDot.getPosition().x - largerDot.getPosition().x;
+            double dy = smallerDot.getPosition().y - largerDot.getPosition().y;
+            double magnitude = Math.sqrt(dx * dx + dy * dy);
+
+            // Normalize the direction vector
+            dx /= magnitude;
+            dy /= magnitude;
+
+            // Apply the bounce effect
+            smallerDot.getPosition().translate((int) (smallerBounce * dx), (int) (smallerBounce * dy));
+            largerDot.getPosition().translate((int) (-largerBounce * dx), (int) (-largerBounce * dy));
+        }
+    }
+
     public void update() {
         // Blue and Green dot interaction
         if (blueDot != null && greenDot != null) {
-            double distanceBetweenBlueAndGreen = blueDot.getPosition().distance(greenDot.getPosition());
-            if (distanceBetweenBlueAndGreen <= blueDot.getSize() / 2 + greenDot.getSize() / 2) {
-                // Calculate 10% of each dot's size
-                int blueDeduction = (int) (0.10 * greenDot.getSize());
-                int greenDeduction = (int) (0.10 * blueDot.getSize());
+            handleDotInteraction(blueDot, greenDot);
+        }
 
-                // Deduct from each dot's size
-                blueDot.setSize(blueDot.getSize() - blueDeduction);
-                greenDot.setSize(greenDot.getSize() - greenDeduction);
+        // Yellow and Blue dot interaction
+        if (yellowDot != null && blueDot != null) {
+            handleDotInteraction(yellowDot, blueDot);
+        }
 
-                // Determine which dot is smaller
-                Dot smallerDot, largerDot;
-                int smallerBounce, largerBounce;
-                if (blueDot.getSize() < greenDot.getSize()) {
-                    smallerDot = blueDot;
-                    largerDot = greenDot;
-                    smallerBounce = 25;
-                    largerBounce = 15;
-                } else {
-                    smallerDot = greenDot;
-                    largerDot = blueDot;
-                    smallerBounce = 25;
-                    largerBounce = 15;
-                }
-
-                // Determine the direction of the bounce
-                double dx = smallerDot.getPosition().x - largerDot.getPosition().x;
-                double dy = smallerDot.getPosition().y - largerDot.getPosition().y;
-                double magnitude = Math.sqrt(dx * dx + dy * dy);
-
-                // Normalize the direction vector
-                dx /= magnitude;
-                dy /= magnitude;
-
-                // Apply the bounce effect
-                smallerDot.getPosition().translate((int) (smallerBounce * dx), (int) (smallerBounce * dy));
-                largerDot.getPosition().translate((int) (-largerBounce * dx), (int) (-largerBounce * dy));
-            }
+        // Yellow and Green dot interaction
+        if (yellowDot != null && greenDot != null) {
+            handleDotInteraction(yellowDot, greenDot);
         }
 
         // Blue dot and red dots interaction
@@ -152,8 +173,13 @@ public class GamePanel extends JPanel {
 
         // Green dot moves towards Red dots
         if (greenDot != null) {
-            greenDot.moveTowardsTarget(redDots, blueDot);
+            greenDot.moveTowardsTarget(redDots, blueDot, yellowDot);
             consumeRedDot(greenDot);
+        }
+
+        if (yellowDot != null) {
+            yellowDot.moveTowardsTarget(redDots, greenDot, blueDot);
+            consumeRedDot(yellowDot);
         }
 
         repaint();

@@ -1,7 +1,7 @@
 How to Play
 
 Compile each time new code is added
-javac Dot.java GamePanel.java GameFrame.java GreenDot.java BlueDot.java
+javac Dot.java GamePanel.java GameFrame.java GreenDot.java BlueDot.java YellowDot.java
 
 Run
 java GameFrame
