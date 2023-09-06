@@ -27,7 +27,7 @@ public class GamePanel extends JPanel {
         redDots = new ArrayList<>();
 
         // Spawn 5 red dots initially
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 15; i++) {
             spawnRedDot();
         }
 
